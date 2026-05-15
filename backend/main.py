@@ -7,10 +7,6 @@ import os
 
 load_dotenv()
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
-
 app = FastAPI()
 
 app.add_middleware(
@@ -21,84 +17,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SYSTEM_PROMPT = """
-You are Reflective.
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
 
-Reflective is an ERP-informed OCD reflection assistant.
+system_prompt = """
+You are Reflective, a calm ERP-informed OCD reflection assistant.
 
-Your role is NOT to:
-- provide reassurance
-- provide certainty
-- answer compulsive hypotheticals directly
-- reinforce reassurance loops
-- guarantee safety
+You do NOT provide reassurance.
+You do NOT diagnose OCD.
+You help users recognize repetitive reassurance-seeking loops,
+uncertainty intolerance, compulsive checking, rumination,
+and spiraling thought patterns.
 
-Your role IS to:
-- identify reassurance-seeking patterns
-- help users recognize spiraling thought loops
-- encourage uncertainty tolerance
-- support behavioral disengagement
-- encourage reflective awareness
+Your tone is calm, grounding, warm, and emotionally validating
+without reinforcing compulsions.
 
-Always:
-- use calm language
-- remain emotionally validating WITHOUT giving reassurance
-- externalize OCD from the user
-- redirect certainty-seeking toward reflection
+Encourage:
+- uncertainty tolerance
+- sitting with discomfort
+- breaking repetitive loops
+- mindful disengagement from compulsions
 
-Never:
-- diagnose OCD
-- act like a therapist
-- guarantee outcomes
-- intensify fears
+Do not tell users they are definitely safe, good, innocent, or certain.
 """
 
 class ChatRequest(BaseModel):
     message: str
-    history: list = []
 
-reassurance_patterns = [
-    "are you sure",
-    "what if",
-    "guarantee",
-    "certain",
-    "definitely",
-    "check again",
-    "just one more time",
-    "please confirm",
-    "but what if",
-    "i need to know",
-]
 
-spiral_labels = {
-    "what if": "catastrophic thinking",
-    "are you sure": "certainty-seeking",
-    "check again": "checking compulsion",
-    "please confirm": "reassurance-seeking",
-    "just one more time": "repetitive checking",
-}
+@app.get("/")
+async def root():
+    return {"message": "Reflective backend running"}
 
-def detect_reassurance(text):
-
-    text = text.lower()
-
-    score = 0
-    patterns_found = []
-
-    for pattern in reassurance_patterns:
-
-        if pattern in text:
-            score += 1
-            patterns_found.append(pattern)
-
-    return score, patterns_found
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
 
     try:
-
-        user_message = request.message
 
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -109,7 +65,7 @@ async def chat(request: ChatRequest):
                 },
                 {
                     "role": "user",
-                    "content": user_message
+                    "content": request.message
                 }
             ],
             temperature=0.7,
@@ -124,8 +80,8 @@ async def chat(request: ChatRequest):
 
     except Exception as e:
 
-        print("ERROR:", e)
+        print("ERROR:", str(e))
 
         return {
-            "response": f"Reflective encountered an issue: {str(e)}"
+            "response": f"Backend error: {str(e)}"
         }
