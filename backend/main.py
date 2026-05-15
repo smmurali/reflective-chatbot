@@ -12,14 +12,6 @@ client = OpenAI(
 )
 
 app = FastAPI()
-from fastapi.middleware.cors import CORSMiddleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 app.add_middleware(
     CORSMiddleware,
@@ -102,58 +94,38 @@ def detect_reassurance(text):
     return score, patterns_found
 
 @app.post("/chat")
-async def chat(req: ChatRequest):
+async def chat(request: ChatRequest):
 
-    reassurance_score, patterns_found = detect_reassurance(req.message)
+    try:
 
-    detected_labels = []
+        user_message = request.message
 
-    for pattern in patterns_found:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+                {
+                    "role": "user",
+                    "content": user_message
+                }
+            ],
+            temperature=0.7,
+            max_tokens=300,
+        )
 
-        if pattern in spiral_labels:
-            detected_labels.append(
-                spiral_labels[pattern]
-            )
+        reply = response.choices[0].message.content
 
-    reflection_context = ""
+        return {
+            "response": reply
+        }
 
-    if reassurance_score > 0:
+    except Exception as e:
 
-        reflection_context = f"""
-        The user may be engaging in:
-        {', '.join(detected_labels)}
+        print("ERROR:", e)
 
-        Your response should:
-        - gently identify the reassurance loop
-        - avoid certainty
-        - encourage uncertainty tolerance
-        - reinforce disengagement from compulsive checking
-        """
-
-    completion = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        temperature=0.7,
-        messages=[
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT
-            },
-            {
-                "role": "system",
-                "content": reflection_context
-            },
-            *req.history,
-            {
-                "role": "user",
-                "content": req.message
-            }
-        ]
-    )
-
-    response_text = completion.choices[0].message.content
-
-    return {
-        "response": response_text,
-        "reassurance_score": reassurance_score,
-        "patterns_detected": detected_labels
-    }
+        return {
+            "response": f"Reflective encountered an issue: {str(e)}"
+        }
