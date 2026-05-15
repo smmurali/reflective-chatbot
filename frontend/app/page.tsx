@@ -156,6 +156,21 @@ export default function Home() {
         </div>
 
       </div>
+      {/* Footer Disclaimer */}
+
+<footer className="relative z-10 border-t border-white/10 bg-black/20 backdrop-blur-md px-6 py-4 text-center">
+
+  <p className="text-xs md:text-sm text-green-100/60 leading-relaxed max-w-4xl mx-auto">
+
+    Reflective is an ERP-informed behavioral awareness and reflection tool designed to help users recognize reassurance-seeking and repetitive thought cycles. 
+
+    Reflective is <span className="font-semibold">NOT</span> intended to diagnose OCD or replace therapy, counseling, psychiatric treatment, or medical care.
+
+    This project was developed with consideration of ethical counseling principles inspired by the ACA Code of Ethics, including beneficence, nonmaleficence, autonomy, and minimizing reinforcement of compulsive reassurance loops.
+
+  </p>
+
+</footer>
 
     </main>
   );
