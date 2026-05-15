@@ -1,6 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import "./globals.css";
+import { Nunito } from "next/font/google";
+
+const nunito = Nunito({
+  subsets: ["latin"],
+});
 
 export default function Home() {
 
@@ -70,129 +76,84 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-slate-950 to-black text-white flex items-center justify-center p-6">
+  <main className="min-h-screen bg-gradient-to-b from-[#0f1f17] via-[#13271d] to-[#09110c] text-white flex flex-col">
 
-      <div className="w-full max-w-4xl rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden">
+    {/* Header */}
+    <div className="w-full border-b border-white/10 backdrop-blur-md bg-white/5 px-6 py-5 flex items-center justify-between">
 
-        <div className="p-8 border-b border-white/10">
+      <div>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+          Reflective ✨
+        </h1>
 
-          <div className="flex items-center gap-4">
+        <p className="text-green-200/70 mt-1 text-sm md:text-base">
+          Gentle OCD Pattern Reflection Assistant
+        </p>
+      </div>
 
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-2xl shadow-lg">
-              🌙
-            </div>
+      <div className="text-3xl">
+        🌙
+      </div>
+    </div>
 
-            <div>
-              <h1 className="text-4xl font-bold tracking-tight">
-                Reflective
-              </h1>
+    {/* Stars Background */}
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute top-10 left-10 text-white/20 text-xl animate-pulse">✦</div>
+      <div className="absolute top-20 right-20 text-white/20 text-sm animate-pulse">✧</div>
+      <div className="absolute top-40 left-1/3 text-white/10 text-lg animate-pulse">⋆</div>
+      <div className="absolute bottom-32 right-1/4 text-white/20 animate-pulse">✦</div>
+    </div>
 
-              <p className="text-slate-300 mt-1 text-lg">
-                ERP-Informed Reflection Assistant
-              </p>
-            </div>
-          </div>
-        </div>
+    {/* Chat Area */}
+    <div className="flex-1 flex justify-center items-center px-4 py-6 relative z-10">
 
-        <div className="h-[500px] overflow-y-auto p-6 space-y-5">
+      <div className="w-full max-w-4xl h-[80vh] rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl flex flex-col overflow-hidden">
 
-          {messages.length === 0 && (
-
-            <div className="text-slate-400 space-y-4">
-
-              <p>
-                Reflective helps identify reassurance loops and spiraling thought cycles.
-              </p>
-
-              <div className="bg-white/5 rounded-2xl p-4">
-                “What if I contaminated someone?”
-              </div>
-
-              <div className="bg-white/5 rounded-2xl p-4">
-                “Can you guarantee I’m okay?”
-              </div>
-
-              <div className="bg-white/5 rounded-2xl p-4">
-                “Should I check one more time?”
-              </div>
-
-            </div>
-          )}
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6">
 
           {messages.map((msg, index) => (
-
             <div
               key={index}
-              className={`rounded-2xl p-5 max-w-3xl ${
+              className={`max-w-[85%] md:max-w-[75%] rounded-3xl px-5 py-4 text-sm md:text-base leading-relaxed shadow-lg ${
                 msg.role === "user"
-                  ? "bg-indigo-500 ml-auto"
-                  : "bg-white/5 border border-white/10"
+                  ? "ml-auto bg-green-500 text-black"
+                  : "bg-white/10 border border-white/10 text-white"
               }`}
             >
-
-              <p className="leading-relaxed whitespace-pre-wrap">
-                {msg.content}
-              </p>
-
-              {msg.score !== undefined && msg.score > 0 && (
-
-                <div className="mt-4 space-y-2">
-
-                  <div className="text-sm text-indigo-300">
-                    Reassurance Loop Intensity: {msg.score}
-                  </div>
-
-                  {msg.patterns?.map((pattern: string, i: number) => (
-
-                    <div
-                      key={i}
-                      className="inline-block mr-2 mt-1 bg-indigo-500/20 border border-indigo-400/20 rounded-xl px-3 py-1 text-sm text-indigo-200"
-                    >
-                      {pattern}
-                    </div>
-
-                  ))}
-
-                </div>
-              )}
-
+              {msg.content}
             </div>
           ))}
 
-          {loading && (
-
-            <div className="bg-white/5 rounded-2xl p-5 w-fit animate-pulse">
-              Reflective is thinking...
-            </div>
-
-          )}
-
         </div>
 
-        <div className="border-t border-white/10 p-6 flex gap-4">
+        {/* Input */}
+        <div className="border-t border-white/10 p-4 md:p-5 bg-black/20">
 
-          <input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Share your thoughts..."
-            className="flex-1 rounded-2xl bg-white/5 border border-white/10 px-5 py-4 outline-none focus:border-indigo-400 text-lg"
-          />
+          <div className="flex gap-3 items-center">
 
-          <button
-            onClick={sendMessage}
-            className="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:scale-105 transition-all duration-200 font-semibold shadow-xl"
-          >
-            Send
-          </button>
+            <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="What thoughts are looping right now?"
+              className="flex-1 rounded-2xl bg-white/10 border border-white/10 px-5 py-4 text-white placeholder:text-white/40 outline-none focus:border-green-400 transition"
+            />
 
-        </div>
+            <button
+              onClick={sendMessage}
+              className="px-6 py-4 rounded-2xl bg-gradient-to-r from-green-400 to-emerald-500 text-black font-semibold hover:scale-105 transition-all duration-200 shadow-lg"
+            >
+              Send ✨
+            </button>
 
-        <div className="px-6 pb-6 text-xs text-slate-500 leading-relaxed">
-          Reflective is an ERP-informed behavioral awareness tool inspired by OCD treatment principles. It is not a replacement for therapy, diagnosis, or medical care.
+          </div>
+
         </div>
 
       </div>
 
     </div>
-  );
+
+  </main>
 }
+
