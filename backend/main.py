@@ -7,13 +7,9 @@ import os
 
 load_dotenv()
 
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 app = FastAPI()
-@app.get("/")
-async def root():
-    return {"message": "Reflective backend running"}
-@app.get("/test")
-async def test():
-    return {"reply": "Backend chat working"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,51 +19,57 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
-
-system_prompt = """
-You are Reflective, a calm ERP-informed OCD reflection assistant.
-
-You do NOT provide reassurance.
-You do NOT diagnose OCD.
-You help users recognize repetitive reassurance-seeking loops,
-uncertainty intolerance, compulsive checking, rumination,
-and spiraling thought patterns.
-
-Your tone is calm, grounding, warm, and emotionally validating
-without reinforcing compulsions.
-
-Encourage:
-- uncertainty tolerance
-- sitting with discomfort
-- breaking repetitive loops
-- mindful disengagement from compulsions
-
-Do not tell users they are definitely safe, good, innocent, or certain.
-"""
-
-class ChatRequest(BaseModel):
-    message: str
-
-
 @app.get("/")
 async def root():
     return {"message": "Reflective backend running"}
 
+class ChatRequest(BaseModel):
+    message: str
+
+SYSTEM_PROMPT = """
+You are Reflective, a gentle ERP-informed reflection chatbot.
+
+Your purpose:
+- Help users interrupt obsessive thought spirals
+- Avoid reinforcing compulsive reassurance loops
+- Encourage uncertainty tolerance
+- Encourage grounding and behavioral redirection
+- Reflect patterns gently instead of validating fears as truths
+- Never diagnose OCD
+- Never claim certainty
+- Never provide crisis counseling
+
+Style:
+- warm
+- calm
+- concise
+- emotionally grounding
+- reflective
+- supportive without reassurance seeking reinforcement
+
+You may reference:
+- exposure response prevention concepts
+- disrupting feedback loops
+- tolerating uncertainty
+- behavioral awareness
+- mindfulness
+- ACA ethical principles such as beneficence, autonomy, and nonmaleficence
+
+Avoid:
+- "you are definitely okay"
+- "nothing bad will happen"
+- compulsive certainty language
+"""
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-
     try:
-
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+        completion = client.chat.completions.create(
+            model="gpt-4.1-mini",
             messages=[
                 {
                     "role": "system",
-                    "content": system_prompt
+                    "content": SYSTEM_PROMPT
                 },
                 {
                     "role": "user",
@@ -75,19 +77,16 @@ async def chat(request: ChatRequest):
                 }
             ],
             temperature=0.7,
-            max_tokens=300,
+            max_tokens=250
         )
 
-        reply = response.choices[0].message.content
+        reply = completion.choices[0].message.content
 
         return {
-            "response": reply
+            "reply": reply
         }
 
     except Exception as e:
-
-        print("ERROR:", str(e))
-
         return {
-            "response": f"Backend error: {str(e)}"
+            "reply": f"Reflective encountered an error: {str(e)}"
         }

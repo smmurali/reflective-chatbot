@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 export default function Home() {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content:
@@ -15,26 +20,29 @@ export default function Home() {
   const sendMessage = async () => {
     if (!message.trim()) return;
 
-    const userMessage = {
-      role: "user",
-      content: message,
-    };
-
-    const updatedMessages = [...messages, userMessage];
+    const updatedMessages = [
+      ...messages,
+      { role: "user" as const, content: message },
+    ];
 
     setMessages(updatedMessages);
+
+    const currentMessage = message;
     setMessage("");
 
     try {
-      const response = await fetch("https://reflective-chatbot-1vge.onrender.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: message,
-        }),
-      });
+      const response = await fetch(
+        "https://reflective-chatbot-1vge.onrender.com/chat",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: currentMessage,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -42,7 +50,7 @@ export default function Home() {
         ...updatedMessages,
         {
           role: "assistant",
-          content: data.response,
+          content: data.reply,
         },
       ]);
     } catch (error) {
@@ -58,62 +66,31 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0f1f17] via-[#13271d] to-[#09110c] text-white flex flex-col relative overflow-hidden">
+    <main className="min-h-screen bg-gradient-to-b from-[#0f1f16] to-[#07110c] text-white flex flex-col">
+      <div className="border-b border-green-900/40 backdrop-blur-md bg-black/10">
+        <div className="max-w-5xl mx-auto px-6 py-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-5xl font-bold tracking-tight">
+              Reflective ✨
+            </h1>
+            <p className="text-green-100/70 mt-2 text-lg">
+              Gentle OCD Pattern Reflection Assistant
+            </p>
+          </div>
 
-      {/* Floating Stars */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-
-        <div className="absolute top-10 left-10 text-white/20 text-2xl animate-pulse">
-          ✦
-        </div>
-
-        <div className="absolute top-24 right-20 text-white/10 text-xl animate-pulse">
-          ✧
-        </div>
-
-        <div className="absolute top-40 left-1/3 text-white/10 text-lg animate-pulse">
-          ⋆
-        </div>
-
-        <div className="absolute bottom-24 right-1/4 text-white/20 text-xl animate-pulse">
-          ✦
-        </div>
-
-        <div className="absolute bottom-40 left-20 text-white/10 text-sm animate-pulse">
-          ✧
+          <div className="text-4xl opacity-80">
+            🌙
+          </div>
         </div>
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 w-full border-b border-white/10 bg-white/5 backdrop-blur-md px-6 py-5 flex items-center justify-between">
-
-        <div>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
-            Reflective ✨
-          </h1>
-
-          <p className="text-green-200/70 mt-2 text-sm md:text-base">
-            Gentle OCD Pattern Reflection Assistant
-          </p>
-        </div>
-
-        <div className="text-4xl">
-          🌙
-        </div>
-      </header>
-
-      {/* Main Chat Container */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-6">
-
-        <div className="w-full max-w-5xl h-[82vh] rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col">
-
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6">
-
+      <div className="flex-1 flex justify-center px-4 py-8">
+        <div className="w-full max-w-5xl flex flex-col rounded-3xl border border-green-900/40 bg-black/10 backdrop-blur-xl overflow-hidden shadow-2xl">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-[65vh]">
             {messages.map((msg, index) => (
               <div
                 key={index}
-                className={`max-w-[90%] md:max-w-[75%] rounded-3xl px-5 py-4 whitespace-pre-wrap text-sm md:text-base leading-relaxed shadow-lg ${
+                className={`max-w-[80%] whitespace-pre-wrap rounded-3xl px-6 py-5 text-lg leading-relaxed ${
                   msg.role === "user"
                     ? "ml-auto bg-green-400 text-black"
                     : "bg-white/10 border border-white/10 text-white"
@@ -122,14 +99,10 @@ export default function Home() {
                 {msg.content}
               </div>
             ))}
-
           </div>
 
-          {/* Input Area */}
-          <div className="border-t border-white/10 bg-black/20 p-4 md:p-5">
-
-            <div className="flex gap-3 items-center">
-
+          <div className="border-t border-green-900/40 p-5 bg-black/20">
+            <div className="flex gap-4">
               <input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -139,39 +112,30 @@ export default function Home() {
                   }
                 }}
                 placeholder="What thoughts are looping right now?"
-                className="flex-1 rounded-2xl bg-white/10 border border-white/10 px-5 py-4 text-white placeholder:text-white/40 outline-none focus:border-green-400 transition-all"
+                className="flex-1 rounded-2xl bg-white/5 border border-green-400/30 px-5 py-4 outline-none text-lg placeholder:text-white/40 focus:border-green-300"
               />
 
               <button
                 onClick={sendMessage}
-                className="px-6 py-4 rounded-2xl bg-gradient-to-r from-green-400 to-emerald-500 text-black font-semibold hover:scale-105 transition-all duration-200 shadow-lg"
+                className="px-8 py-4 rounded-2xl bg-green-400 text-black font-semibold text-lg hover:scale-105 transition"
               >
                 Send ✨
               </button>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-      {/* Footer Disclaimer */}
 
-<footer className="relative z-10 border-t border-white/10 bg-black/20 backdrop-blur-md px-6 py-4 text-center">
-
-  <p className="text-xs md:text-sm text-green-100/60 leading-relaxed max-w-4xl mx-auto">
-
-    Reflective is an ERP-informed behavioral awareness and reflection tool designed to help users recognize reassurance-seeking and repetitive thought cycles. 
-
-    Reflective is <span className="font-semibold">NOT</span> intended to diagnose OCD or replace therapy, counseling, psychiatric treatment, or medical care.
-
-    This project was developed with consideration of ethical counseling principles inspired by the ACA Code of Ethics, including beneficence, nonmaleficence, autonomy, and minimizing reinforcement of compulsive reassurance loops.
-
-  </p>
-
-</footer>
-
+      <footer className="max-w-5xl mx-auto px-6 pb-10 text-sm text-white/50 leading-relaxed text-center">
+        Reflective is an ERP-informed behavioral awareness and reflection tool
+        designed to help users recognize reassurance-seeking and repetitive
+        thought cycles. Reflective is NOT intended to diagnose OCD or replace
+        therapy, counseling, psychiatric treatment, or medical care. This
+        project was developed with consideration of ethical counseling
+        principles inspired by the ACA Code of Ethics, including beneficence,
+        nonmaleficence, autonomy, and minimizing reinforcement of compulsive
+        reassurance loops.
+      </footer>
     </main>
   );
 }
