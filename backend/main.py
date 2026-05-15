@@ -8,6 +8,9 @@ import os
 load_dotenv()
 
 app = FastAPI()
+@app.get("/")
+async def root():
+    return {"message": "Reflective backend running"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,10 +23,6 @@ app.add_middleware(
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
-
-@app.get("/")
-async def root():
-    return {"message": "Reflective backend running"}
 
 system_prompt = """
 You are Reflective, a calm ERP-informed OCD reflection assistant.
