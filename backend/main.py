@@ -11,6 +11,9 @@ app = FastAPI()
 @app.get("/")
 async def root():
     return {"message": "Reflective backend running"}
+@app.get("/test")
+async def test():
+    return {"reply": "Backend chat working"}
 
 app.add_middleware(
     CORSMiddleware,
