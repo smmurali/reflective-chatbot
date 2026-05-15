@@ -26,7 +26,7 @@ export default function Home() {
     setMessage("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/chat", {
+      const response = await fetch("https://reflective-chatbot-1vge.onrender.com", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
